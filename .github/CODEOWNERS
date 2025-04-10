@@ -2,10 +2,10 @@
 * @D1207-D
 
 # Terraform infrastructure code
-/infra/ @D1207-D @team-member-2 @team-member-3 @team-member-4
+/infra/ @D1207-D @rhythmsh05 @seerat-sawhney @yogeshBhatt897
 
 # GitHub Actions workflows
-/.github/workflows/ @D1207-D @team-member-2 @team-member-3 @team-member-4
+/.github/workflows/ @D1207-D @rhythmsh05 @seerat-sawhney @yogeshBhatt897
 
 # Application code
-/app/ @D1207-D @team-member-2 @team-member-3 @team-member-4
+/app/ @D1207-D @rhythmsh05 @seerat-sawhney @yogeshBhatt897
