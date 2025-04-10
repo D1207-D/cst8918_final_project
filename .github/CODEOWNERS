@@ -1,0 +1,11 @@
+# These owners will be the default owners for everything in the repo
+* @D1207-D
+
+# Terraform infrastructure code
+/infra/ @D1207-D @team-member-2 @team-member-3 @team-member-4
+
+# GitHub Actions workflows
+/.github/workflows/ @D1207-D @team-member-2 @team-member-3 @team-member-4
+
+# Application code
+/app/ @D1207-D @team-member-2 @team-member-3 @team-member-4
