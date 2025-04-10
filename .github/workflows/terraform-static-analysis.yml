@@ -12,6 +12,9 @@ jobs:
   static-analysis:
     name: Static Analysis
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./infra
     
     steps:
       - name: Checkout code
@@ -22,23 +25,31 @@ jobs:
         with:
           terraform_version: "1.5.0"
 
+      - name: Initialize Terraform for validation
+        run: |
+          cat > provider.tf <<EOF
+          provider "azurerm" {
+            features {}
+            skip_provider_registration = true
+          }
+          EOF
+
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
-        working-directory: ./infra
 
       - name: Terraform Init
         run: terraform init -backend=false
-        working-directory: ./infra
 
       - name: Terraform Validate
         run: terraform validate
-        working-directory: ./infra
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v3
         with:
           tflint_version: v0.44.1
 
+      - name: Initialize TFLint
+        run: tflint --init
+
       - name: Run TFLint
         run: tflint --recursive
-        working-directory: ./infra
