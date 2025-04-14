@@ -37,3 +37,17 @@ resource "azurerm_subnet" "admin" {
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.3.0.0/16"]
 }
+
+resource "azurerm_subnet" "aks" {
+  name                 = "aks-subnet"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = ["10.4.0.0/16"]
+}
+
+resource "azurerm_subnet" "redis" {
+  name                 = "redis-subnet"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = ["10.5.0.0/16"]
+}
