@@ -45,12 +45,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
     log_analytics_workspace_id = azurerm_log_analytics_workspace.aks.id
   }
 
-  security_profile {
-    microsoft_defender {
-      log_analytics_workspace_id = azurerm_log_analytics_workspace.aks.id
-      enabled                    = true
-    }
-  }
+  azure_defender_enabled = true
 
   tags = {
     Environment = var.environment
