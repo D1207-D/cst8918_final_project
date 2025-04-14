@@ -45,8 +45,8 @@ resource "azurerm_kubernetes_cluster" "aks" {
     log_analytics_workspace_id = azurerm_log_analytics_workspace.aks.id
   }
 
-  microsoft_defender {
-    enabled = true
+  azure_defender {
+    log_analytics_workspace_id = azurerm_log_analytics_workspace.aks.id
   }
 
   tags = {
