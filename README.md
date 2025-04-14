@@ -4,10 +4,10 @@
 This project implements a Terraform-managed infrastructure on Azure for deploying a Remix Weather Application. The infrastructure includes AKS clusters, managed Redis DB, and uses GitHub Actions for automation.
 
 ## Team Members
-- [Your Name](https://github.com/D1207-D)
-- [Team Member 2](GitHub Profile Link)
-- [Team Member 3](GitHub Profile Link)
-- [Team Member 4](GitHub Profile Link)
+- [Daniyal](https://github.com/D1207-D)
+- [Rhythm](https://github.com/rhythmsh05)
+- [Yogesh Bhatt](https://github.com/yogeshBhatt897)
+- [Seerat Sawhney](https://github.com/seerat-sawhney)
 
 ## Project Structure
 ```
