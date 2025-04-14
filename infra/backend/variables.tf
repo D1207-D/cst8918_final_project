@@ -7,6 +7,7 @@ variable "project_name" {
 variable "group_number" {
   description = "Your group number from Brightspace"
   type        = string
+  default     = "5"
 }
 
 variable "location" {
