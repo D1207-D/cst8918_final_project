@@ -5,6 +5,8 @@ resource "azurerm_kubernetes_cluster" "aks" {
   dns_prefix          = "${var.project_name}-${var.environment}"
   kubernetes_version  = var.kubernetes_version
 
+  api_server_authorized_ip_ranges = ["0.0.0.0/0"] # TODO: Restrict this to your IP range
+
   default_node_pool {
     name                = "default"
     node_count          = var.node_count
