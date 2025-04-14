@@ -1,9 +1,9 @@
 module "network" {
   source = "./network"
 
-  project_name = var.project_name
-  environment  = var.environment
-  location     = var.location
+  project_name  = var.project_name
+  group_number  = "5"
+  location      = var.location
 }
 
 module "aks" {
