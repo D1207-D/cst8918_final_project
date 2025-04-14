@@ -1,0 +1,73 @@
+name: Deploy Monitoring Stack
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'k8s/monitoring/**'
+      - '.github/workflows/deploy-monitoring.yml'
+  workflow_dispatch:
+
+env:
+  GRAFANA_ADMIN_USER: admin
+  GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --resource-group ${{ vars.RESOURCE_GROUP }} \
+            --name ${{ vars.AKS_CLUSTER_NAME }}
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Create monitoring namespace
+        run: |
+          kubectl apply -f k8s/monitoring/namespace.yaml
+
+      - name: Create Grafana admin secret
+        run: |
+          kubectl create secret generic grafana-admin \
+            --namespace monitoring \
+            --from-literal=admin-user=${{ env.GRAFANA_ADMIN_USER }} \
+            --from-literal=admin-password=${{ env.GRAFANA_ADMIN_PASSWORD }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy Prometheus
+        run: |
+          kubectl apply -f k8s/monitoring/prometheus-config.yaml
+          kubectl apply -f k8s/monitoring/prometheus-deployment.yaml
+
+      - name: Deploy Grafana
+        run: |
+          kubectl apply -f k8s/monitoring/grafana-deployment.yaml
+          kubectl apply -f k8s/monitoring/grafana-dashboards.yaml
+
+      - name: Wait for deployments
+        run: |
+          kubectl rollout status deployment/prometheus -n monitoring
+          kubectl rollout status deployment/grafana -n monitoring
+
+      - name: Get monitoring endpoints
+        if: success()
+        run: |
+          echo "Monitoring endpoints:"
+          kubectl get ingress -n monitoring -o wide
