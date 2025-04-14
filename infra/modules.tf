@@ -20,3 +20,15 @@ module "aks" {
 
   depends_on = [module.network]
 }
+
+module "acr" {
+  source = "./acr"
+
+  project_name        = var.project_name
+  environment         = var.environment
+  location            = var.location
+  resource_group_name = module.network.resource_group_name
+  aks_principal_id    = module.aks.cluster_identity
+
+  depends_on = [module.aks]
+}
