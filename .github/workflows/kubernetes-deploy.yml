@@ -1,0 +1,75 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'k8s/**'
+      - '.github/workflows/kubernetes-deploy.yml'
+  workflow_run:
+    workflows: ["Build and Push Container"]
+    types:
+      - completed
+  workflow_dispatch:
+
+env:
+  REGISTRY_NAME: ${{ vars.REGISTRY_NAME }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --resource-group ${{ vars.RESOURCE_GROUP }} \
+            --name ${{ vars.AKS_CLUSTER_NAME }}
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Create namespace if not exists
+        run: |
+          kubectl create namespace app --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Create ACR pull secret
+        run: |
+          TOKEN=$(az acr login --name ${{ env.REGISTRY_NAME }} --expose-token --output tsv --query accessToken)
+          kubectl create secret docker-registry acr-secret \
+            --namespace app \
+            --docker-server=${{ env.REGISTRY_NAME }}.azurecr.io \
+            --docker-username=00000000-0000-0000-0000-000000000000 \
+            --docker-password=$TOKEN \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy application
+        run: |
+          # Update namespace in manifests
+          sed -i 's/namespace: default/namespace: app/g' k8s/*.yaml
+          
+          # Deploy manifests
+          kubectl apply -f k8s/
+
+      - name: Wait for deployment
+        run: |
+          kubectl rollout status deployment/remix-weather-app -n app --timeout=300s
+
+      - name: Get service status
+        if: success()
+        run: |
+          echo "Application endpoints:"
+          kubectl get ingress -n app -o wide
