@@ -5,7 +5,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   dns_prefix          = "${var.project_name}-${var.environment}"
   kubernetes_version  = var.kubernetes_version
 
-  api_server_authorized_ip_ranges = ["0.0.0.0/0"]  # TODO: Restrict this to your IP range
+  api_server_authorized_ip_ranges = ["0.0.0.0/0"] # TODO: Restrict this to your IP range
 
   default_node_pool {
     name                = "default"
@@ -39,7 +39,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 
   role_based_access_control_enabled = true
-  azure_policy_enabled             = true
+  azure_policy_enabled              = true
 
   oms_agent {
     log_analytics_workspace_id = azurerm_log_analytics_workspace.aks.id
