@@ -13,10 +13,40 @@ permissions:
   id-token: write
 
 jobs:
+  backend:
+    name: 'Setup Backend'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: 'Az CLI login'
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.0
+
+    - name: Terraform Init Backend
+      run: terraform init
+      working-directory: ./infra/backend
+
+    - name: Terraform Apply Backend
+      run: terraform apply -auto-approve
+      working-directory: ./infra/backend
+
   terraform:
     name: 'Terraform Apply'
     runs-on: ubuntu-latest
     environment: production
+    needs: backend
 
     steps:
     - name: Checkout
