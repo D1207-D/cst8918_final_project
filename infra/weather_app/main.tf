@@ -4,16 +4,15 @@ resource "kubernetes_namespace" "weather_app" {
   }
 }
 
-resource "kubernetes_secret" "redis_credentials" {
+resource "kubernetes_secret" "app_secrets" {
   metadata {
-    name      = "redis-credentials"
+    name      = "app-secrets"
     namespace = kubernetes_namespace.weather_app.metadata[0].name
   }
 
   data = {
-    REDIS_HOST     = var.redis_host
-    REDIS_PORT     = var.redis_port
-    REDIS_PASSWORD = var.redis_primary_key
+    REDIS_URL         = "rediss://:${var.redis_primary_key}@${var.redis_host}:${var.redis_port}"
+    OPENWEATHER_KEY   = var.openweather_api_key
   }
 }
 
@@ -53,24 +52,24 @@ resource "kubernetes_deployment" "weather_app" {
 
           env_from {
             secret_ref {
-              name = kubernetes_secret.redis_credentials.metadata[0].name
+              name = kubernetes_secret.app_secrets.metadata[0].name
             }
           }
 
           resources {
             limits = {
-              cpu    = "500m"
+              cpu    = "200m"
               memory = "512Mi"
             }
             requests = {
-              cpu    = "250m"
+              cpu    = "100m"
               memory = "256Mi"
             }
           }
 
           liveness_probe {
             http_get {
-              path = "/health"
+              path = "/"
               port = 3000
             }
             initial_delay_seconds = 30
@@ -79,7 +78,7 @@ resource "kubernetes_deployment" "weather_app" {
 
           readiness_probe {
             http_get {
-              path = "/health"
+              path = "/"
               port = 3000
             }
             initial_delay_seconds = 5

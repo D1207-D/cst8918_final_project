@@ -5,20 +5,21 @@ resource "azurerm_kubernetes_cluster" "aks" {
   dns_prefix          = "${var.project_name}-${var.environment}"
   kubernetes_version  = var.kubernetes_version
 
-  api_server_authorized_ip_ranges = ["0.0.0.0/0"] # TODO: Restrict this to your IP range
+  api_server_access_profile {
+    authorized_ip_ranges = ["0.0.0.0/0"] # TODO: Restrict this to your IP range
+  }
 
   default_node_pool {
     name                = "default"
-    node_count          = var.node_count
-    vm_size             = var.vm_size
+    node_count          = var.environment == "test" ? 1 : 1
+    vm_size             = "Standard_B2s"
     vnet_subnet_id      = var.subnet_id
-    enable_auto_scaling = true
-    min_count           = 1
-    max_count           = 3
+    enable_auto_scaling = var.environment == "prod"
+    min_count           = var.environment == "prod" ? 1 : null
+    max_count           = var.environment == "prod" ? 3 : null
     os_disk_size_gb     = 50
     os_sku              = "Ubuntu"
     type                = "VirtualMachineScaleSets"
-    zones               = [1, 2, 3]
 
     tags = {
       Environment = var.environment
@@ -36,6 +37,8 @@ resource "azurerm_kubernetes_cluster" "aks" {
     load_balancer_sku = "standard"
     network_policy    = "calico"
     outbound_type     = "loadBalancer"
+    service_cidr      = "172.16.0.0/16"
+    dns_service_ip    = "172.16.0.10"
   }
 
   role_based_access_control_enabled = true

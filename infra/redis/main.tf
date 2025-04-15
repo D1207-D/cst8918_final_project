@@ -2,16 +2,15 @@ resource "azurerm_redis_cache" "weather_app" {
   name                = "${var.project_name}-${var.environment}-redis"
   location            = var.location
   resource_group_name = var.resource_group_name
-  capacity            = 1
+  capacity            = 0
   family              = "C"
   sku_name            = "Basic"
-  enable_non_ssl_port = false
+  non_ssl_port_enabled = true
   minimum_tls_version = "1.2"
+  redis_version       = "6"
 
   redis_configuration {
-    maxmemory_reserved              = 50
-    maxfragmentationmemory_reserved = 50
-    maxmemory_delta                 = 50
+    maxmemory_policy = "allkeys-lru"
   }
 
   tags = {

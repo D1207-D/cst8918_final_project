@@ -1,0 +1,55 @@
+name: 'Deploy SSL Certificates'
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'ssl/**'
+      - '.github/workflows/deploy-ssl.yml'
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
+
+jobs:
+  deploy-ssl:
+    name: 'Deploy SSL'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: 'Az CLI login'
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: 'Get AKS credentials'
+      run: |
+        az aks get-credentials \
+          --resource-group ${{ secrets.RESOURCE_GROUP }} \
+          --name ${{ secrets.AKS_CLUSTER_NAME }}
+
+    - name: 'Install cert-manager'
+      run: |
+        helm repo add jetstack https://charts.jetstack.io
+        helm repo update
+        helm upgrade --install cert-manager jetstack/cert-manager \
+          --namespace cert-manager --create-namespace \
+          --set installCRDs=true
+
+    - name: 'Deploy SSL issuer'
+      run: |
+        kubectl apply -f ssl/issuer.yaml
+
+    - name: 'Deploy SSL certificates'
+      run: |
+        kubectl apply -f ssl/certificates.yaml

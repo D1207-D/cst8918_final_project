@@ -1,0 +1,55 @@
+name: 'Deploy Monitoring Stack'
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'monitoring/**'
+      - '.github/workflows/deploy-monitoring.yml'
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+
+jobs:
+  deploy-monitoring:
+    name: 'Deploy Monitoring'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: 'Az CLI login'
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: 'Get AKS credentials'
+      run: |
+        az aks get-credentials \
+          --resource-group ${{ secrets.RESOURCE_GROUP }} \
+          --name ${{ secrets.AKS_CLUSTER_NAME }}
+
+    - name: 'Add Helm repos'
+      run: |
+        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+        helm repo add grafana https://grafana.github.io/helm-charts
+        helm repo update
+
+    - name: 'Deploy Prometheus'
+      run: |
+        helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
+          --namespace monitoring --create-namespace \
+          --set grafana.adminPassword=${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+
+    - name: 'Deploy Grafana dashboards'
+      run: |
+        kubectl apply -f monitoring/dashboards/ -n monitoring

@@ -26,6 +26,7 @@ variable "subnet_id" {
 variable "kubernetes_version" {
   description = "Version of Kubernetes"
   type        = string
+  default     = "1.32"
 }
 
 variable "node_count" {

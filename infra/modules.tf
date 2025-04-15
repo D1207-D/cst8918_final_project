@@ -20,3 +20,28 @@ module "aks" {
 
   depends_on = [module.network]
 }
+
+module "redis" {
+  source = "./redis"
+
+  project_name        = var.project_name
+  environment         = var.environment
+  location            = var.location
+  resource_group_name = module.network.resource_group_name
+
+  depends_on = [module.network]
+}
+
+module "weather_app" {
+  source = "./weather_app"
+
+  project_name        = var.project_name
+  environment         = var.environment
+  redis_host          = module.redis.redis_host
+  redis_port          = module.redis.redis_port
+  redis_primary_key   = module.redis.redis_primary_key
+  acr_login_server    = var.acr_login_server
+  openweather_api_key = var.openweather_api_key
+
+  depends_on = [module.aks, module.redis]
+}

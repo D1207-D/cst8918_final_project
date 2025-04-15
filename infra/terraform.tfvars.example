@@ -1,0 +1,8 @@
+project_name        = "weather-app"
+environment         = "prod"
+location           = "canadacentral"
+group_number       = "1"  # Your group number
+kubernetes_version = "1.32"
+node_count         = 1
+vm_size           = "Standard_B2s"
+openweather_api_key = "your-api-key-here"

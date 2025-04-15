@@ -42,3 +42,9 @@ variable "replicas" {
   type        = number
   default     = 2
 }
+
+variable "openweather_api_key" {
+  description = "OpenWeather API key for weather data"
+  type        = string
+  sensitive   = true
+}
