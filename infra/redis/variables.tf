@@ -9,7 +9,7 @@ variable "environment" {
 }
 
 variable "location" {
-  description = "Azure region"
+  description = "Azure region to deploy resources"
   type        = string
 }
 
@@ -18,23 +18,17 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "subnet_id" {
-  description = "ID of the subnet for AKS"
+variable "aks_subnet_start_ip" {
   type        = string
+  description = "Start IP of AKS subnet range"
 }
 
-variable "kubernetes_version" {
-  description = "Version of Kubernetes"
+variable "aks_subnet_end_ip" {
   type        = string
-  default     = "1.32"
+  description = "End IP of AKS subnet range"
 }
 
-variable "node_count" {
-  description = "Number of AKS worker nodes in the default node pool"
-  type        = number
-}
-
-variable "vm_size" {
-  description = "Size of AKS worker nodes"
+variable "log_analytics_workspace_id" {
   type        = string
+  description = "Log Analytics Workspace ID for diagnostics"
 }

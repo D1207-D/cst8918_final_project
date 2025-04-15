@@ -1,0 +1,52 @@
+name: 'Kubernetes Deploy'
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'Dockerfile'
+      - '.github/workflows/kubernetes-deploy.yml'
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'Dockerfile'
+      - '.github/workflows/kubernetes-deploy.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: 'Deploy to AKS'
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'pull_request' && 'test' || 'production' }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: 'Az CLI login'
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: 'Get AKS credentials'
+      run: |
+        az aks get-credentials \
+          --resource-group ${{ secrets.RESOURCE_GROUP }} \
+          --name ${{ secrets.AKS_CLUSTER_NAME }}
+
+    - name: 'Deploy to AKS'
+      run: |
+        # Update image tag in deployment
+        kubectl set image deployment/weather-app \
+          weather-app=${{ secrets.REGISTRY_NAME }}.azurecr.io/weather-app:${{ github.sha }} \
+          -n weather-app
+
+        # Wait for rollout
+        kubectl rollout status deployment/weather-app -n weather-app

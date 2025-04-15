@@ -19,7 +19,7 @@ variable "location" {
 variable "kubernetes_version" {
   description = "Version of Kubernetes"
   type        = string
-  default     = "1.26.0"
+  default     = "1.30.11"
 }
 
 variable "node_count" {
@@ -32,4 +32,16 @@ variable "vm_size" {
   description = "Size of AKS worker nodes"
   type        = string
   default     = "Standard_D2s_v3"
+}
+
+variable "openweather_api_key" {
+  description = "OpenWeather API key for weather data"
+  type        = string
+  sensitive   = true
+}
+
+variable "acr_login_server" {
+  description = "Azure Container Registry login server"
+  type        = string
+  default     = "cst8918finaldev.azurecr.io"
 }
